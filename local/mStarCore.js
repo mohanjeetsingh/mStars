@@ -8,20 +8,18 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
       };
       const sAnimate = document["createElement"]("style"); sAnimate["innerHTML"] = "@keyframes mAnimate {0% {transform: rotate(0deg);} 100% {transform:rotate(360deg);}} .mStars-loader ~ div{visibility:hidden;}", document.head["appendChild"](sAnimate);
     }
-    function sRender(d, sRating, sSize) {
+    function sRender(d, sRating) {
       //star renderer
       let sTag = d.getElementsByTagName("mStar");
       for (let i = 0; i < sTag["length"]; i++) {
         if (i <= sRating) {
-          if (i < Math["floor"](sRating)) sTag[i]["querySelector"]("full")["style"]["width"] = "100%", sTag[i].querySelector("empty")["style"].width = "0%";
-          else {
-            let sPartial = sRating - Math["floor"](sRating),
-              s = d["getElementsByTagName"]("mStar")[i],
-              pStarSize = Math["round"](sPartial * sSize);
-            s.querySelector("full")["style"]["width"] = pStarSize + "px",
-              s["querySelector"]("empty")["style"]["width"] = sSize - pStarSize + "px", s["querySelector"]("empty")["querySelector"]("img")["style"].margin = "0 0 0 -" + pStarSize + "px";
-          }
-        } else i > sRating && (sTag[i]["querySelector"]("full")["style"]["width"] = "0%", sTag[i]["querySelector"]("empty")["style"]["width"] = "100%", sTag[i]["querySelector"]("empty")["querySelector"]("img")["style"]["margin"] = "0 0 0 0");
+//          console.log(i, sRating, sRating % 1,sTag["length"]);
+          sTag[i]["querySelector"]("full")["style"]["width"] = "100%",
+            sTag[i].querySelector("empty")["style"].width = "0%";
+          (i >= Math["floor"](sRating))&&(sRating>0)&&(d["getElementsByTagName"]("mStar")[i].querySelector("full")["style"]["opacity"] = sRating%1);
+        } else i > sRating && (sTag[i]["querySelector"]("full")["style"]["width"] = "0%",
+          sTag[i]["querySelector"]("empty")["style"]["width"] = "100%",
+          sTag[i]["querySelector"]("empty")["querySelector"]("img")["style"]["margin"] = "0 0 0 0");
         sTag[i].querySelector("hover").style["width"] = "0%";
       }
     }
@@ -29,12 +27,11 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
       //onclick tooltip renderer
       let clickTip = document["createElement"]("div");
       clickTip["innerHTML"] = text["replace"](/\$userRating\$/g, rating),
-        clickTip["style"]["position"] = "absolute",
+        clickTip["style"] = "border:1px solid gold;borderRadius:7px",
+ clickTip["style"]["position"] = "absolute",
         clickTip.style.background = "white",
         clickTip["style"]["color"] = "inherit",
         clickTip["style"]["background-color"] = "rgba(255,215,0,25%)",
-//        clickTip["style"].border = "1px solid gold",
- //       clickTip["style"]["borderRadius"] = "7px",
         clickTip["style"]["padding"] = "3px 7px",
         clickTip["style"]["lineHeight"] = 1.2,
         clickTip["style"]["textAlign"] = "center",
@@ -69,8 +66,8 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
           sRN = mPage;
       }
       sRN = sRN["replace"](/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-")["replace"](/\!/g, "-")["replace"](/\$/g, "-")["replace"](/\%/g, "-").replace(/\&/g, "-")["replace"](/\(/g, "-").replace(/\)/g, "-");
-      let sEmptyImg = mStar.getAttribute("emptyStarImg") || "https://1.bp.blogspot.com/-pOr9XGwtSJc/Wsjf8ULOIqI/AAAAAAAAAKE/KBh-LUDIn0YzASKf-t7mQo8UNpdHhr2SgCLcBGAs/s1600/pusta.png",
-        sFullImg = mStar["getAttribute"]("fullStarImg") || "https://3.bp.blogspot.com/-QSNdWP4Ijx4/Wsjf7QOUZ4I/AAAAAAAAAJ8/F2nReVG5WfA1rLV3dGcAFMsPOnIQck4YwCLcBGAs/s1600/pelna.png",
+      let sEmptyImg = mStar.getAttribute("emptyStarImg"),
+        sFullImg = mStar["getAttribute"]("fullStarImg"),
         sHoverImg = mStar["getAttribute"]("hoverStarImg");
       if (sHoverImg === null || sHoverImg == "") sHoverImg = sFullImg;
       let sSize = mStar["getAttribute"]("starSize");
@@ -126,7 +123,7 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
           } else rWrap["title"] = tDone["replace"](/\$userRating\$/g, localStorage["bsrgl_" + sRN]), rWrap["style"]["cursor"] = "default";
           //console.log(localStorage["bsrgl_" + sRN]);
         });
-        eStar["setAttribute"]("wartosc", i);
+        eStar["setAttribute"]("value", i);
         let eFStar = document["createElement"]("full"); eFStar["style"]["display"] = "inline-block", eFStar["style"]["overflow"] = "hidden";
         let eEStar = document["createElement"]("empty"); eEStar["style"]["display"] = "inline-block", eEStar["style"].overflow = "hidden";
         let eHStar = document["createElement"]("hover"); eHStar["style"]["display"] = "inline-block", eHStar["style"]["overflow"] = "hidden";
@@ -149,7 +146,6 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
               rInit.O0 = 0, //votes
               rArr = rInit;
           }
-          //        console.log({ dbVal, aviara: dbRec });
           sRender(rWrap, rArr.OO * sNo, sSize);
           if (rWrap["contains"](sLoader)) sLoader["remove"]();
           starWrap["onmouseleave"] = function () { sRender(rWrap, rArr.OO * sNo, sSize), dTextTop["innerHTML"] = tTop; },
