@@ -1,4 +1,4 @@
-mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
+mSInstance = typeof mSInstance == "undefined" ? 0 : mSInstance + 1,
   function (mStarExists) {
     //  console.log({ v5 });
   if (mStarExists === 0 && !document["querySelector"]("script[src='https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js']")) {
@@ -180,4 +180,4 @@ mStarCreator = typeof mStarCreator == "undefined" ? 0 : mStarCreator + 1,
       typeof firebase == "object" && typeof firebase["database"] == "function" && typeof firebase["initializeApp"] == "function" ? mStarRating(v5) : setTimeout(function () { starInit(v5); }, 50);
     }
     starInit(mStarExists);
-  }(mStarCreator);
+  }(mSInstance);
