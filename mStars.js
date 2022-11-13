@@ -117,7 +117,7 @@ function mStars(m, db, app) {
             else { db.lastIndexOf("/") !== db.length - 1 && (db = db + "/"); }
     }
     let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;", m.insertBefore(sWrap, m.lastChild);
-    !isM && (sWrap.style.margin="1rem");
+    isM && (sWrap.style.margin="1rem");
     //Star Render
     for (let i = 1; i <= sSet["sNo"]; i++) {
         let s = document.createElement("mStar"); s.style = "display:inline-block;margin:0.1rem", s.style.width = sSet["sSize"] + "rem", s.style.cursor = !R && isM ? "pointer" : "default";
