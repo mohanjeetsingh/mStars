@@ -86,8 +86,8 @@ function mStars(m, db, app) {
     let sPath = pathFormat(m.getAttribute("data-url"), H),
         R = localStorage["mSR_" + sPath];
     for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
-   // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
-    sSet["sSize"]= isM ? dSet["sSize"]:(dSet["sSize"] / 3);
+    // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
+    sSet["sSize"] = isM ? dSet["sSize"] : (dSet["sSize"] / 3);
     m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
     sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     //console.log(sSet["sSize"],isM);
@@ -151,10 +151,10 @@ function mStars(m, db, app) {
             sRender(m, rating);
             m.contains(spinny) && spinny.remove();
 
-            //JSON for SEO - Ratings on Google Search Ranking
-            document.getElementById("ratingJSON").innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
-
             if (isM) {
+                //JSON for SEO - Ratings on Google Search Ranking
+                document.getElementById("ratingJSON").innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
+
                 sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); },
                     m.querySelectorAll(".mStars-average").forEach(e => e.textContent = Math.round(rating * 100) / 100),
                     m.querySelectorAll(".mStars-votes").forEach(e => e.textContent = rArr.c),
