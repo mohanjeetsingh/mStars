@@ -1,3 +1,11 @@
+/*!
+ * mStars
+ * Demo @ https://mBlocksForBloggers.blogspot.com/
+ * Documentation @ tbd
+ * Agency @ https://CIA.RealHappinessCenter.com
+ * Copyright (c) 2022, Mohanjeet Singh (https://Mohanjeet.blogspot.com/)
+ * Released under the MIT license
+ */
 //Settings and variable/const defintions
 var mSettings = {
     "default": {
