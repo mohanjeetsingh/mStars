@@ -17,17 +17,12 @@ var mSettings = {
     "postPage": { "rOff": false },
     "staticPage": { "rOff": false }
 }
-//Assign settings by type of current page (for Blogger)
-const sSet = /.*\/\d{4}\/\d{2}\/.*\.html/.test(location.href.split("?")[0].split("#")[0]) ? mSettings.postPage : /.*\/p\/.*\.html/.test(location.href.split("?")[0].split("#")[0]) ? mSettings.staticPage : mSettings.indexPage, defSet = mSettings.default;
-for (let i in defSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = defSet[i]);
 
-//Covert path into identifier
-function pathFormat(p) {
-    let e = p.split("?")[0].split("#")[0].replace("https:", "").replace("http:", "").replace("file:", "").replace("ftp:", "").replace("mailto:", "");
-    for (; "/" == e[0];)e = e.substring(1);
-    for (0 === e.indexOf("www.") && (e = e.replace("www.", "")); "/" == e[e.length - 1];)e = e.substring(0, e.length - 1);
-    //      console.log({e});
-    return e = e.replace(/\./g, "_").replace(/\//g, "__").replace(/\,/g, "___").replace(/\s/g, "");
+//Assign settings by type of current page (for Blogger)
+sSet = typeof sSet == "undefined";
+if (sSet) {
+    sSet = /.*\/\d{4}\/\d{2}\/.*\.html/.test(location.href.split("?")[0].split("#")[0]) ? mSettings.postPage : /.*\/p\/.*\.html/.test(location.href.split("?")[0].split("#")[0]) ? mSettings.staticPage : mSettings.indexPage, defSet = mSettings.default;
+    for (let i in defSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = defSet[i]);
 }
 
 mSInstance = typeof mSInstance == "undefined" ? 0 : mSInstance + 1,
@@ -38,7 +33,16 @@ mSInstance = typeof mSInstance == "undefined" ? 0 : mSInstance + 1,
                 const fDB = document.createElement("script"); fDB.src = "https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js", document.head.appendChild(fDB);
             };
             const sAnimate = document.createElement("style"); sAnimate.innerHTML = "@keyframes mAnimate {0% {transform: rotate(0deg);} 100% {transform:rotate(360deg);}} .mSpinny ~ div{visibility:hidden;}", document.head.appendChild(sAnimate);
-        }
+    }
+    
+//Covert path into identifier
+function pathFormat(p) {
+    let e = p.split("?")[0].split("#")[0].replace("https:", "").replace("http:", "").replace("file:", "").replace("ftp:", "").replace("mailto:", "");
+    for (; "/" == e[0];)e = e.substring(1);
+    for (0 === e.indexOf("www.") && (e = e.replace("www.", "")); "/" == e[e.length - 1];)e = e.substring(0, e.length - 1);
+    //      console.log({e});
+    return e = e.replace(/\./g, "_").replace(/\//g, "__").replace(/\,/g, "___").replace(/\s/g, "");
+}
         //Star Renderer
         function sRender(e, rating) {
             //        console.log({ e, rating });
@@ -46,7 +50,7 @@ mSInstance = typeof mSInstance == "undefined" ? 0 : mSInstance + 1,
             for (let i = 0; i < sTag.length; i++) {
                 const e = sTag[i].querySelector("empty"), f = sTag[i].querySelector("full"), h = sTag[i].querySelector("hover");
                 f.style.width = "0%", e.style.width = "100%", h.style.width = "0%", e.style.opacity = .1;
-                if (i <= rating && rating > 0) {
+                if (i < rating && rating > 0) {
                     f.style.width = "100%", e.style.width = "0%";
                     (i >= Math.floor(rating)) && (rating > 0) && (f.style.opacity = rating % 1);
                 } else { e.style.opacity = rating % 1 > 0 ? rating % 1 : .1; }
