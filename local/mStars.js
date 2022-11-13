@@ -86,8 +86,8 @@ function mStars(m, db, app) {
     let sPath = pathFormat(m.getAttribute("data-url"), H),
         R = localStorage["mSR_" + sPath];
     for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
-   // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
-    sSet["sSize"]= isM ? dSet["sSize"]:(dSet["sSize"] / 3);
+    // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
+    sSet["sSize"] = isM ? dSet["sSize"] : (dSet["sSize"] / 3);
     m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
     sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     //console.log(sSet["sSize"],isM);
@@ -116,7 +116,8 @@ function mStars(m, db, app) {
             if ((db.indexOf("https://") !== 0) || (db.lastIndexOf("firebaseio.com") < 5)) db = "Error! Invalid Firebase URL.";
             else { db.lastIndexOf("/") !== db.length - 1 && (db = db + "/"); }
     }
-    let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;margin:1rem", m.insertBefore(sWrap, m.lastChild);
+    let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;", m.insertBefore(sWrap, m.lastChild);
+    !isM && (sWrap.style.margin="1rem");
     //Star Render
     for (let i = 1; i <= sSet["sNo"]; i++) {
         let s = document.createElement("mStar"); s.style = "display:inline-block;margin:0.1rem", s.style.width = sSet["sSize"] + "rem", s.style.cursor = !R && isM ? "pointer" : "default";
@@ -151,10 +152,10 @@ function mStars(m, db, app) {
             sRender(m, rating);
             m.contains(spinny) && spinny.remove();
 
-            //JSON for SEO - Ratings on Google Search Ranking
-            document.getElementById("ratingJSON").innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
-
             if (isM) {
+                //JSON for SEO - Ratings on Google Search Ranking
+                document.getElementById("ratingJSON").innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
+
                 sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); },
                     m.querySelectorAll(".mStars-average").forEach(e => e.textContent = Math.round(rating * 100) / 100),
                     m.querySelectorAll(".mStars-votes").forEach(e => e.textContent = rArr.c),
