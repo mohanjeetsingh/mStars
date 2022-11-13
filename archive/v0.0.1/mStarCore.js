@@ -136,9 +136,9 @@ mSInstance = typeof mSInstance == "undefined" ? 0 : mSInstance + 1,
       }
       rWrap["appendChild"](dTextBottom), sRender(rWrap, 0, sSize);
       if (dbLoc["indexOf"]("Firebase error") < 0) {
-        const dbInitOptions = {};
-        dbInitOptions.databaseURL = dbLoc;
-        let dbInitApp = firebase.initializeApp(dbInitOptions, sRN + mStarExists),
+        const dbConfig = {};
+        dbConfig.databaseURL = dbLoc;
+        let dbInitApp = firebase.initializeApp(dbConfig, sRN + mStarExists),
           dbInit = dbInitApp["database"]()["ref"]("StarRatingSystem/" + mSite + "/" + sRN);
         dbInit.on("value", dbVal => {
           let rArr = dbVal["val"]();
