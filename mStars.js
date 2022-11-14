@@ -161,7 +161,11 @@ function mStars(m, db, app) {
             sRender(m, rating);
             m.contains(spinny) && spinny.remove();
             //JSON for SEO - Ratings on Google Search Ranking
-            let j = (m.getElementsByClassName("ratingJSON").length > 0) ? (m.getElementsByClassName("ratingJSON")[0]):m.append(document.createElement("script"));
+            let j;
+            console.log(m.getElementsByClassName("ratingJSON").length, m.getElementsByClassName("ratingJSON"), m.getElementsByClassName("ratingJSON")==true);
+            if (m.getElementsByClassName("ratingJSON").length > 0) {
+                j = m.getElementsByClassName("ratingJSON")[0];
+            } else { j = document.createElement("script"); m.append(j); };
                 j.innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
 
             if (isM) {
