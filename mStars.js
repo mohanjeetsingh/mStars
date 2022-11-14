@@ -95,7 +95,7 @@ function mStars(m, db, app) {
         R = localStorage["mSR_" + sPath];
     for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
-    sSet["sSize"] = isM ? dSet["sSize"] : (dSet["sSize"] / 3);
+    sSet["sSize"] = (m.dataset.size == "sm") ? (dSet["sSize"]/3) : dSet["sSize"];
     m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
     sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     //console.log(sSet["sSize"],isM);
