@@ -161,7 +161,7 @@ function mStars(m, db, app) {
             sRender(m, rating);
             m.contains(spinny) && spinny.remove();
             //JSON for SEO - Ratings on Google Search Ranking
-            let j = (document.getElementsByClassName("ratingJSON").length > 0) ? (document.getElementsByClassName("ratingJSON")[0]):m.append(document.createElement("script"));
+            let j = (m.getElementsByClassName("ratingJSON").length > 0) ? (m.getElementsByClassName("ratingJSON")[0]):m.append(document.createElement("script"));
                 j.innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
 
             if (isM) {
