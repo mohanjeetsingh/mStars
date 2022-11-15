@@ -77,8 +77,7 @@ function sSchema(e, r, c) {
         type = e.dataset.schema,
         j = t[0] || document.createElement("script");
     t.length == 0 && (b.append(j), j.type = 'application/ld+json');
-    let m = '{"@context": "https://schema.org/","@type": "'+type+'","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
-    j.text = m;
+    j.text = '{"@context": "https://schema.org/","@type": "'+type+'","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
     //            console.log({ b, r, j }, j.textContent);
 }
 
