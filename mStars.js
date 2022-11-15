@@ -11,11 +11,13 @@ var mSettings = {
     "default": {
         "sNo": 5,//Number > 0
         "sSize": 2.5,//in rem, Number > 0
-        "tSize": '',//any unit
+        "tSize": 1,//any unit
         "tColor": '',
         "sAlign": "center",
         "tTop": "Liked it? Rate it:",
-        "tBottom": "$average$ average based on $votes$ votes.", //$max$
+        "tBottom-lg": "$average$ average • $votes$ ratings", //$max$
+        "tBottom-md": "$average$/$max$ • $votes$ ratings", //
+        "tBottom-sm": "$average$ • $votes$ ratings", //$max$
         "tThanks": "Thanks for voting!",
         "tDone": "You rated this $userRating$ star!",
     },
@@ -83,7 +85,7 @@ function sSchema(e, r, c) {
 
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
-    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
+    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f +"rem"; document.body.appendChild(T);
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
@@ -92,25 +94,27 @@ function tTip(t, e, r, f) {
         T.style.top = window.scrollY + b.top + 10 + "px";
         //        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
     }, 10),
-        setTimeout(function () {
-            T.style.opacity = "0",
-                setTimeout(function () { document.body.removeChild(T); }, 1e3);
-        }, 3500);
+        setTimeout(function () { T.style.opacity = 0, setTimeout(function () { document.body.removeChild(T); }, 1e3); }, 3500);
 }
 
 function mStars(m, db, app) {
     //        console.log({ m, i});
     const H = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__"),
         pType = m.dataset.pagetype,
+        sSize = m.dataset.size || "lg",
         isM = !(m.dataset.display == "true"),
+        isV=(m.dataset.votes=="true"),
         sSet = mSettings[pType],
         dSet = mSettings.default;
     let sPath = pathFormat(m.getAttribute("data-url"), H),
         R = localStorage["mSR_" + sPath];
     for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
-    sSet["sSize"] = (m.dataset.size == "sm") ? (dSet["sSize"] / 3) : (m.dataset.size == "md") ? (dSet["sSize"] / 2) : dSet["sSize"];
-    //console.log(m.dataset.size,m.dataset);
+    sSet["sSize"] = dSet["sSize"] * (sSize == "sm" ? .4 : sSize == "md" ? .6 : 1);
+    sSet["tSize"] = dSet["tSize"] * (sSize == "sm" ? .7 : sSize == "md" ? .75 : 1);
+    sSet["tBottom"]=dSet["tBottom-"+sSize];
+//    console.log(sSet["tBottomD-lg"]);
+    //console.log(sSize,m.dataset);
     m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
     sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     //console.log(sSet["sSize"],isM);
@@ -120,18 +124,18 @@ function mStars(m, db, app) {
     if (sSet["sAlign"] === "center") spinny.style.margin = "auto"; else sSet["sAlign"] === "right" && (spinny.style.marginLeft = "calc(100% - " + sSet["sSize"] * sSet["sNo"] + "rem)");
     m.appendChild(spinny);
 
-    if (isM) {
         //Text above and below the stars
         var tTop = document.createElement("div"), tBottom = document.createElement("div");
         sSet["tBottom"] = sSet["tBottom"].replace(/\$average\$/g, "<span class='mStars-average'>0</span>").replace(/\$votes\$/g, '<span class="mStars-votes">0</span>').replace(/\$max\$/g, sSet["sNo"]),
             tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R);
         tBottom.innerHTML = sSet["tBottom"],
-            tTop.style.fontSize = tBottom.style.fontSize = sSet["tSize"],
-            tTop.style.lineHeight = tBottom.style.lineHeight = 2,
-            tTop.style.textAlign = tBottom.style.textAlign = sSet["sAlign"],
+            tTop.style.fontSize = tBottom.style.fontSize = sSet["tSize"] + "rem",
+  //      isV && (tBottom.style.display="inline-block"),
+            tTop.style.lineHeight = tBottom.style.lineHeight = isV?1:2,
+            tTop.style.textAlign = tBottom.style.textAlign = isV?'':sSet["sAlign"],
             tTop.style.color = tBottom.style.color = sSet["tColor"],
-            m.appendChild(tTop); m.appendChild(tBottom);
-    }
+        isM && m.appendChild(tTop);
+    (isM || isV)&&m.appendChild(tBottom);
     //db
     switch (db) {
         case null: case "": db = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
@@ -141,6 +145,7 @@ function mStars(m, db, app) {
     }
     let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;", m.insertBefore(sWrap, m.lastChild);
     isM && (sWrap.style.margin = "1rem");
+    isV && (sWrap.style.lineHeight=0);
     //Star Render
     for (let i = 1; i <= sSet["sNo"]; i++) {
         let s = document.createElement("mStar"); s.style = "display:inline-block;margin:0.1rem", s.style.width = sSet["sSize"] + "rem", s.style.cursor = !R && isM ? "pointer" : "default";
@@ -175,11 +180,13 @@ function mStars(m, db, app) {
             sRender(m, rating);
             (typeof m.dataset.schema!="undefined") && sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
+            (isM || isV) && (
+                m.getElementsByClassName("mStars-average")[0].textContent = Math.round(rating * 100) / 100,
+                m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
+//                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
 
             if (isM) {
-                sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); },
-                    m.querySelectorAll(".mStars-average").forEach(e => e.textContent = Math.round(rating * 100) / 100),
-                    m.querySelectorAll(".mStars-votes").forEach(e => e.textContent = rArr.c),
+                sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); };
                     m.querySelectorAll("mStar").forEach((e, i) => {
                         e.onclick = function () {
                             if (!R) {
