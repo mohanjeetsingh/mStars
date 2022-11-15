@@ -16,7 +16,7 @@ var mSettings = {
         "sAlign": "center",
         "tTop": "Liked it? Rate it:",
         "tBottom-lg": "$average$ average • $votes$ ratings", //$max$
-        "tBottom-md": "$average$/$max$ • $votes$ ratings", //
+        "tBottom-md": "$average$ • $votes$ ratings", //$max$
         "tBottom-sm": "$average$ • $votes$ ratings", //$max$
         "tThanks": "Thanks for voting!",
         "tDone": "You rated this $userRating$ star!",
