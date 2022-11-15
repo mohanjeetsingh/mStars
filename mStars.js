@@ -53,6 +53,7 @@ function pathFormat(p, host) {
     e = e.replace(/\./g, "_").replace(/\//g, "__").replace(/\,/g, "___").replace(/\s/g, "");
     return e = e.replace(host, "");
 }
+
 //Star Renderer
 function sRender(e, rating) {
     //        console.log({ e, rating });
@@ -68,13 +69,16 @@ function sRender(e, rating) {
     }
 }
 
-    //mStars - JSON for SEO - Rich Reviews Snippet on Google Search Ranking
-    function sSchema(m, r, c) {
-    let b = (m.closest(".post") || m.closest(".Blog")),
+//mStars - Schema for Google Search Rich Reviews Snippet
+function sSchema(e, r, c) {
+    let b = (e.closest(".post") || e.closest(".Blog")),
         t = b.getElementsByClassName("ratingJSON"),
+        n = (e.dataset.title == "" ? document.title : e.dataset.title),
+        type = e.dataset.schema,
         j = t[0] || document.createElement("script");
     t.length == 0 && (b.append(j), j.type = 'application/ld+json');
-    j.text = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
+    let m = '{"@context": "https://schema.org/","@type": "'+type+'","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
+    j.text = m;
     //            console.log({ b, r, j }, j.textContent);
 }
 
@@ -85,9 +89,9 @@ function tTip(t, e, r, f) {
     //            console.log({eCoordinates});
     setTimeout(function () {
         T.style.opacity = "1";
-        T.style.left = e.style.textAlign === "right" ? (window.scrollX + b.left + e.offsetWidth - 200 + "px"): e.style.textAlign === "center" ? (window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px") : window.scrollX + b.left + "px";
+        T.style.left = e.style.textAlign === "right" ? (window.scrollX + b.left + e.offsetWidth - 200 + "px") : e.style.textAlign === "center" ? (window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px") : window.scrollX + b.left + "px";
         T.style.top = window.scrollY + b.top + 10 + "px";
-//        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
+        //        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
     }, 10),
         setTimeout(function () {
             T.style.opacity = "0",
@@ -170,7 +174,7 @@ function mStars(m, db, app) {
 
             //Render stars and remove Spinny
             sRender(m, rating);
-            sSchema(m, rating, rArr.c);
+            (typeof m.dataset.schema!="undefined") && sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
 
             if (isM) {
