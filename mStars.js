@@ -67,16 +67,27 @@ function sRender(e, rating) {
         //                console.log({ i },e.style.opacity,e.style.width);
     }
 }
+
+    //mStars - JSON for SEO - Rich Reviews Snippet on Google Search Ranking
+    function sSchema(m, r, c) {
+    let b = (m.closest(".post") || m.closest(".Blog")),
+        t = b.getElementsByClassName("ratingJSON"),
+        j = t[0] || document.createElement("script");
+    t.length == 0 && (b.append(j), j.type = 'application/ld+json');
+    j.text = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
+    //            console.log({ b, r, j }, j.textContent);
+}
+
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
-    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,25%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
+    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
         T.style.opacity = "1";
-        if (e.style.textAlign === "right") T.style.left = window.scrollX + b.left + e.offsetWidth - 200 + "px";
-        else e.style.textAlign === "center" ? T.style.left = window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px" : T.style.left = window.scrollX + b.left + "px";
-        T.style.top = (b.top > T.offsetHeight ? window.scrollY + b.top - T.offsetHeight : window.scrollY + b.top + T.offsetHeight) + "px";
+        T.style.left = e.style.textAlign === "right" ? (window.scrollX + b.left + e.offsetWidth - 200 + "px"): e.style.textAlign === "center" ? (window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px") : window.scrollX + b.left + "px";
+        T.style.top = window.scrollY + b.top + 10 + "px";
+//        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
     }, 10),
         setTimeout(function () {
             T.style.opacity = "0",
@@ -96,7 +107,7 @@ function mStars(m, db, app) {
     for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
     sSet["sSize"] = (m.dataset.size == "sm") ? (dSet["sSize"] / 3) : (m.dataset.size == "md") ? (dSet["sSize"] / 2) : dSet["sSize"];
-    console.log(m.dataset.size,m.dataset);
+    //console.log(m.dataset.size,m.dataset);
     m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
     sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     //console.log(sSet["sSize"],isM);
@@ -126,7 +137,7 @@ function mStars(m, db, app) {
             else { db.lastIndexOf("/") !== db.length - 1 && (db = db + "/"); }
     }
     let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;", m.insertBefore(sWrap, m.lastChild);
-    isM && (sWrap.style.margin="1rem");
+    isM && (sWrap.style.margin = "1rem");
     //Star Render
     for (let i = 1; i <= sSet["sNo"]; i++) {
         let s = document.createElement("mStar"); s.style = "display:inline-block;margin:0.1rem", s.style.width = sSet["sSize"] + "rem", s.style.cursor = !R && isM ? "pointer" : "default";
@@ -154,22 +165,16 @@ function mStars(m, db, app) {
         //console.log({ dbInit },app.name,sPath);
         dbInit.on("value", dbVal => {
             let rArr = dbVal.val() || { "r": 0, "c": 0 },
-                rating = (rArr.r * sSet["sNo"]).toFixed(4);
+                rating = (rArr.r * sSet["sNo"]).toFixed(2);
             //                    console.log({ rArr });
 
             //Render stars and remove Spinny
             sRender(m, rating);
+            sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
-            //JSON for SEO - Ratings on Google Search Ranking
-            let j;
-            console.log(m.getElementsByClassName("ratingJSON").length, m.getElementsByClassName("ratingJSON"), m.getElementsByClassName("ratingJSON")==true);
-            if (m.getElementsByClassName("ratingJSON").length > 0) {
-                j = m.getElementsByClassName("ratingJSON")[0];
-            } else { j = document.createElement("script"); m.append(j); };
-                j.innerHTML = '{"@context": "https://schema.org/","@type": "CreativeWorkSeries","name": "' + document.title + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + rating + '","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
 
             if (isM) {
-            sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); },
+                sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); },
                     m.querySelectorAll(".mStars-average").forEach(e => e.textContent = Math.round(rating * 100) / 100),
                     m.querySelectorAll(".mStars-votes").forEach(e => e.textContent = rArr.c),
                     m.querySelectorAll("mStar").forEach((e, i) => {
@@ -178,7 +183,7 @@ function mStars(m, db, app) {
                                 // console.log({ R }, !R);
                                 //rating update
                                 var newRating = (rArr.r * rArr.c + (i + 1) / sSet["sNo"]) / (rArr.c + 1);
-                                dbInit.set({ "r": newRating, "c": rArr.c + 1 }),
+                                dbInit.set({ "r": newRating.toFixed(6), "c": rArr.c + 1 }),
                                     R = localStorage["mSR_" + sPath] = i + 1,
                                     m.querySelectorAll("mStar").forEach(e => e.style.cursor = "default"),
                                     tTip(sSet["tThanks"], m, i + 1, sSet["tSize"]),
