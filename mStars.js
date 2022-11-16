@@ -57,7 +57,7 @@ function pathFormat(p, host) {
 }
 
 //mStars Render
-function sRender(e, S, isD, isV, R, tTop) {
+function sRender(e, S, isD, isV, R, p, tTop) {
     const w = document.createElement("div"), n = S["sNo"]; w.style.width = (S["sSize"] + 0.1 * 2) * n + "rem", w.style = "display:inline-block;", e.insertBefore(w, e.lastChild);
     !isD && (w.style.margin = "1rem");
     isV && (w.style.lineHeight = 0);
@@ -68,8 +68,8 @@ function sRender(e, S, isD, isV, R, tTop) {
         s.style = "display:inline-block;margin:0.1rem",
             s.style.cursor = !R && !isD ? "pointer" : "inherit";
 
-        !isD &&  (s.onmouseenter = function () {
-            if(!R){
+        !isD &&  (s.onmouseenter = function() {
+            if(!localStorage["mSR_" + p]){
             let s = e.getElementsByTagName("svg");
                 for (let j = 0; j < s.length; j++) {
                     s[j].style.fill = "gold", s[j].style.opacity = j < i ? 1 : .25;
@@ -111,6 +111,7 @@ function sSchema(e, r, c) {
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
     const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
+    console.log({t:T.style.fontSize,f});
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
@@ -168,7 +169,7 @@ function mStars(m, dbPath, app) {
             else { dbPath.lastIndexOf("/") !== dbPath.length - 1 && (dbPath = dbPath + "/"); }
     }
 
-    let w = sRender(m, S, isD, isV, R, tTop);
+    let w = sRender(m, S, isD, isV, R, p, tTop);
 
     if (dbPath.indexOf("Error!") < 0) {
         let db = app.database().ref("mStars/" + h + "/" + p);
@@ -206,7 +207,7 @@ function mStars(m, dbPath, app) {
                             R = localStorage["mSR_" + p] = i + 1;
                             m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
                             i >= 3 && tTip(S["tThanks"], m, i + 1, S["tSize"]);
-                            tTop.innerHTML = S["tTop"] + i > 3 && " Thanks!";
+                            tTop.innerHTML = S["tTop"] + (i > 3 ? " Thanks!" : '');
                         } else tTip(S["tDone"], m, R, S["tSize"]);
                         //console.log(R);
                     };
