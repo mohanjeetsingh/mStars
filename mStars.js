@@ -66,17 +66,17 @@ function sRender(e, S, isD, isV, R, tTop) {
         w.insertAdjacentHTML("beforeend", '<svg xmlns="http://www.w3.org/2000/svg" width="' + S["sSize"] + 'rem" height="' + S["sSize"] + 'rem" fill="gold" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" /></svg >');
         const s = w.lastChild;
         s.style = "display:inline-block;margin:0.1rem",
-            s.style.cursor = !R && !isD ? "pointer" : "default";
+            s.style.cursor = !R && !isD ? "pointer" : "inherit";
 
-        !isD && (s.onmouseenter = function () {
+        !isD &&  (s.onmouseenter = function () {
+            if(!R){
             let s = e.getElementsByTagName("svg");
-            if (R) { s[j].style.cursor = "inherit" } else {
                 for (let j = 0; j < s.length; j++) {
                     s[j].style.fill = "gold", s[j].style.opacity = j < i ? 1 : .25;
                 }
                 (S["tTop"] != "") && (tTop.innerHTML = i + "/" + n);
             }
-        });
+            });
     }
     return w;
 }
