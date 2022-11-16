@@ -18,7 +18,7 @@ var mSettings = {
         "tBottom-lg": "$average$ average • $votes$ ratings", //$max$
         "tBottom-md": "$average$ • $votes$ ratings", //$max$
         "tBottom-sm": "$average$ • $votes$ ratings", //$max$
-        "tThanks": "Thanks for voting!",
+        "tThanks": "Thanks for rating!",
         "tDone": "You rated this $userRating$ star!",
     },
     "archive": {},
@@ -40,7 +40,7 @@ if (!document.getElementById("fbdb")) {
 function init() {
     //    console.log({ i },document.getElementsByClassName("mStars"));
     if (typeof firebase == "object" && typeof firebase.database == "function" && typeof firebase.initializeApp == "function") {
-        let db = document.getElementById("mStars").getAttribute("data-db"),
+        let db = document.getElementById("mStars").dataset.db,
             a = firebase.initializeApp({ "databaseURL": db }, "mStars");
         Array.from(document.getElementsByClassName("mStars")).forEach((e) => { mStars(e, db, a) });
     } else { setTimeout(function () { init(); }, 50); }
@@ -68,18 +68,12 @@ function sRender(e, S, isD, isV, R, tTop) {
         s.style = "display:inline-block;margin:0.1rem",
             s.style.cursor = !R && !isD ? "pointer" : "default";
 
-        !isD && (s.onmouseenter = function () {
-            //            console.log({ R });
-            if (!R) {
+        !isD && !R && (s.onmouseenter = function () {
                 let s = e.getElementsByTagName("svg");
                 for (let j = 0; j < s.length; j++) {
                     let m = s[j]; m.style.fill = "gold", m.style.opacity = j < i ? 1 : .25;
                 }
                 (S["tTop"] != "") && (tTop.innerHTML = i + "/" + n);
-            } else {
-                e.title = S["tDone"].replace(/\$userRating\$/g, R),
-                    e.style.cursor = "default";
-            }
         });
     }
     return w;
@@ -126,7 +120,7 @@ function tTip(t, e, r, f) {
         setTimeout(function () { T.style.opacity = 0, setTimeout(function () { document.body.removeChild(T); }, 1e3); }, 3500);
 }
 
-function mStars(m, db, app) {
+function mStars(m, dbPath, app) {
     //        console.log({ m, i});
     const h = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__"),
         t = m.dataset.pagetype,
@@ -135,7 +129,7 @@ function mStars(m, db, app) {
         isV = (m.dataset.votes == "true"),
         S = mSettings[t],
         D = mSettings.default;
-    let p = pathFormat(m.getAttribute("data-url"), h);
+    let p = pathFormat(m.dataset.url, h);
     for (let i in D) (typeof (S[i]) == "undefined") && (S[i] = D[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
     S["sSize"] = D["sSize"] * (s == "sm" ? .4 : s == "md" ? .6 : 1);
@@ -146,7 +140,7 @@ function mStars(m, db, app) {
     m.style.textAlign = S["sAlign"], m.style.position = "relative";
     p = p.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
 
-    let R = localStorage["mSR_" + p]
+    let R = localStorage["mSR_" + p];
     //console.log(sSet["sSize"],isM);
 
     //Add Loading Spinner
@@ -165,19 +159,20 @@ function mStars(m, db, app) {
     (!isD || isV) && m.appendChild(tBottom);
 
     //db
-    switch (db) {
-        case null: case "": db = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
+    switch (dbPath) {
+        case null: case "": dbPath = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
         default:
-            if ((db.indexOf("https://") !== 0) || (db.lastIndexOf("firebaseio.com") < 5)) db = "Error! Invalid Firebase URL.";
-            else { db.lastIndexOf("/") !== db.length - 1 && (db = db + "/"); }
+            if ((dbPath.indexOf("https://") !== 0) || (dbPath.lastIndexOf("firebaseio.com") < 5)) dbPath = "Error! Invalid Firebase URL.";
+            else { dbPath.lastIndexOf("/") !== dbPath.length - 1 && (dbPath = dbPath + "/"); }
     }
 
     let w = sRender(m, S, isD, isV, R, tTop);
 
-    if (db.indexOf("Error!") < 0) {
-        let dbInit = app.database().ref("mStars/" + h + "/" + p);
-        //console.log({ dbInit },app.name,sPath);
-        dbInit.on("value", dbVal => {
+    if (dbPath.indexOf("Error!") < 0) {
+        let db = app.database().ref("mStars/" + h + "/" + p);
+//        console.log({ db });
+        db.on("value", dbVal => {
+//            console.log({ db, dbVal },dbVal.val());
             let rArr = dbVal.val() || { "r": 0, "c": 0 },
                 rating = (rArr.r * S["sNo"]).toFixed(2);
             //                    console.log({ rArr });
@@ -187,7 +182,7 @@ function mStars(m, db, app) {
             (typeof m.dataset.schema != "undefined") && sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
             (!isD || isV) && (
-                m.getElementsByClassName("mStars-average")[0].textContent = Math.round(rating * 100) / 100,
+                m.getElementsByClassName("mStars-average")[0].textContent = rating,
                 m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
             //                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
 
@@ -196,24 +191,24 @@ function mStars(m, db, app) {
                     sUpdate(m, rating),
                         tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
                 };
-                m.querySelectorAll("svg").forEach((e, i) => {
+                Array.from(m.getElementsByTagName("svg")).forEach((e, i) => {
                     e.onclick = function () {
                         if (!R) {
-                            // console.log({ R }, !R);
                             //rating update
-                            var newRating = (rArr.r * rArr.c + (i + 1) / S["sNo"]) / (rArr.c + 1);
-                            console.log({ "r": newRating.toFixed(6), "c": rArr.c + 1 });
-                            dbInit.set({ "r": newRating.toFixed(6), "c": rArr.c + 1 }),
-                                R = localStorage["mSR_" + p] = i + 1,
-                                m.querySelectorAll("svg").forEach(e => e.style.cursor = "default"),
-                                tTip(S["tThanks"], m, i + 1, S["tSize"]),
-                                tTop.innerHTML = S["tTop"];
+                            const c = rArr.c + 1,
+                                r = Math.round((rArr.r * rArr.c + (i + 1)/S["sNo"]) / c * 1000000) / 1000000;
+//                            console.log({ "r": r, "c": c,i });
+                            db.set({ "r": r, "c": c });
+                            R = localStorage["mSR_" + p] = i + 1;
+                            m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
+                            i >= 3 && tTip(S["tThanks"], m, i + 1, S["tSize"]);
+                            tTop.innerHTML = S["tTop"];
                         } else tTip(S["tDone"], m, R, S["tSize"]);
                         //console.log(R);
                     };
                 });
             }
         });
-    } else m.innerHTML = db;
+    } else m.innerHTML = dbPath;
 }
 init();
