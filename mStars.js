@@ -111,13 +111,13 @@ function sSchema(e, r, c) {
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
     const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
-    console.log({t:T.style.fontSize,f});
+//    console.log({t:T.style.fontSize,f});
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
         T.style.opacity = "1";
         T.style.left = e.style.textAlign === "right" ? (window.scrollX + b.left + e.offsetWidth - 200 + "px") : e.style.textAlign === "center" ? (window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px") : window.scrollX + b.left + "px";
-        T.style.top = window.scrollY + b.top + 10 + "px";
+        T.style.top = window.scrollY + b.top + 44 + "px";
         //        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
     }, 10),
         setTimeout(function () { T.style.opacity = 0, setTimeout(function () { document.body.removeChild(T); }, 1e3); }, 3500);
@@ -161,6 +161,8 @@ function mStars(m, dbPath, app) {
         !isD && m.appendChild(tTop);
     (!isD || isV) && m.appendChild(tBottom);
 
+//    console.log(S["tSize"]);
+
     //db
     switch (dbPath) {
         case null: case "": dbPath = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
@@ -188,7 +190,6 @@ function mStars(m, dbPath, app) {
                 m.getElementsByClassName("mStars-average")[0].textContent = rating,
                 m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
             //                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
-
             if (!isD) {
                 w.onmouseleave = function () {
                     sUpdate(m, rating),
@@ -206,9 +207,10 @@ function mStars(m, dbPath, app) {
                             db.set({ "r": r, "c": c });
                             R = localStorage["mSR_" + p] = i + 1;
                             m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
-                            i >= 3 && tTip(S["tThanks"], m, i + 1, S["tSize"]);
+                            
+                            i >= 3 && tTip(S["tThanks"], m, i + 1, D["tSize"]);
                             tTop.innerHTML = S["tTop"] + (i > 3 ? " Thanks!" : '');
-                        } else tTip(S["tDone"], m, R, S["tSize"]);
+                        } else tTip(S["tDone"], m, R, D["tSize"]);
                         //console.log(R);
                     };
                 });
