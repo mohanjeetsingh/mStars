@@ -68,12 +68,14 @@ function sRender(e, S, isD, isV, R, tTop) {
         s.style = "display:inline-block;margin:0.1rem",
             s.style.cursor = !R && !isD ? "pointer" : "default";
 
-        !isD && !R && (s.onmouseenter = function () {
-                let s = e.getElementsByTagName("svg");
+        !isD && (s.onmouseenter = function () {
+            let s = e.getElementsByTagName("svg");
+            if (R) { s[j].style.cursor = "inherit" } else {
                 for (let j = 0; j < s.length; j++) {
-                    let m = s[j]; m.style.fill = "gold", m.style.opacity = j < i ? 1 : .25;
+                    s[j].style.fill = "gold", s[j].style.opacity = j < i ? 1 : .25;
                 }
                 (S["tTop"] != "") && (tTop.innerHTML = i + "/" + n);
+            }
         });
     }
     return w;
