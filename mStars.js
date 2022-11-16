@@ -11,7 +11,7 @@ var mSettings = {
     "default": {
         "sNo": 5,//Number > 0
         "sSize": 2.5,//in rem, Number > 0
-        "tSize": 1,//any unit
+        "tSize": 1,//in rem, Number > 0
         "tColor": '',
         "sAlign": "center",
         "tTop": "Liked it? Rate it:",
@@ -110,7 +110,7 @@ function sSchema(e, r, c) {
 
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
-    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f + "rem"; document.body.appendChild(T);
+    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
@@ -135,7 +135,7 @@ function mStars(m, dbPath, app) {
     for (let i in D) (typeof (S[i]) == "undefined") && (S[i] = D[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
     S["sSize"] = D["sSize"] * (s == "sm" ? .4 : s == "md" ? .6 : 1);
-    S["tSize"] = D["tSize"] * (s == "sm" ? .7 : s == "md" ? .75 : 1);
+    S["tSize"] = D["tSize"] * (s == "sm" ? .7 : s == "md" ? .75 : 1) +"rem";
     S["tBottom"] = D["tBottom-" + s];
     //    console.log(sSet["tBottomD-lg"]);
     //console.log(sSize,m.dataset);
@@ -155,7 +155,7 @@ function mStars(m, dbPath, app) {
     S["tBottom"] = S["tBottom"].replace(/\$average\$/g, "<span class='mStars-average'>0</span>").replace(/\$votes\$/g, '<span class="mStars-votes">0</span>').replace(/\$max\$/g, S["sNo"]),
         tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
     tBottom.innerHTML = S["tBottom"],
-        tTop.style.fontSize = tBottom.style.fontSize = S["tSize"] + "rem",
+        tTop.style.fontSize = tBottom.style.fontSize = S["tSize"],
         tTop.style.color = tBottom.style.color = S["tColor"],
         !isD && m.appendChild(tTop);
     (!isD || isV) && m.appendChild(tBottom);
@@ -183,7 +183,7 @@ function mStars(m, dbPath, app) {
             sUpdate(m, rating);
             (typeof m.dataset.schema != "undefined") && sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
-            (!isD || isV) && (
+            isV && (
                 m.getElementsByClassName("mStars-average")[0].textContent = rating,
                 m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
             //                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
@@ -192,7 +192,9 @@ function mStars(m, dbPath, app) {
                 w.onmouseleave = function () {
                     sUpdate(m, rating),
                         tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
-                };
+                },
+                    (!isV)&& (m.getElementsByClassName("mStars-average")[0].textContent = rating,
+                m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c),
                 Array.from(m.getElementsByTagName("svg")).forEach((e, i) => {
                     e.onclick = function () {
                         if (!R) {
@@ -204,7 +206,7 @@ function mStars(m, dbPath, app) {
                             R = localStorage["mSR_" + p] = i + 1;
                             m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
                             i >= 3 && tTip(S["tThanks"], m, i + 1, S["tSize"]);
-                            tTop.innerHTML = S["tTop"];
+                            tTop.innerHTML = S["tTop"] + i > 3 && " Thanks!";
                         } else tTip(S["tDone"], m, R, S["tSize"]);
                         //console.log(R);
                     };
