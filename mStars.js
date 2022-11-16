@@ -56,18 +56,47 @@ function pathFormat(p, host) {
     return e = e.replace(host, "");
 }
 
+//mStars Render
+function sRender(e, S, isD, isV, R, tTop) {
+    const w = document.createElement("div"), n = S["sNo"]; w.style.width = (S["sSize"] + 0.1 * 2) * n + "rem", w.style = "display:inline-block;", e.insertBefore(w, e.lastChild);
+    !isD && (w.style.margin = "1rem");
+    isV && (w.style.lineHeight = 0);
+
+    for (let i = 1; i <= n; i++) {
+        w.insertAdjacentHTML("beforeend", '<svg xmlns="http://www.w3.org/2000/svg" width="' + S["sSize"] + 'rem" height="' + S["sSize"] + 'rem" fill="gold" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" /></svg >');
+        const s = w.lastChild;
+        s.style = "display:inline-block;margin:0.1rem",
+            s.style.cursor = !R && !isD ? "pointer" : "default";
+
+        !isD && (s.onmouseenter = function () {
+            //            console.log({ R });
+            if (!R) {
+                let s = e.getElementsByTagName("svg");
+                for (let j = 0; j < s.length; j++) {
+                    let m = s[j]; m.style.fill = "gold", m.style.opacity = j < i ? 1 : .25;
+                }
+                (S["tTop"] != "") && (tTop.innerHTML = i + "/" + n);
+            } else {
+                e.title = S["tDone"].replace(/\$userRating\$/g, R),
+                    e.style.cursor = "default";
+            }
+        });
+    }
+    return w;
+}
+
 //Star Renderer
-function sRender(e, rating) {
+function sUpdate(e, rating) {
     //        console.log({ e, rating });
-    const sTag = e.getElementsByTagName("mStar");
-    for (let i = 0; i < sTag.length; i++) {
-        const e = sTag[i].querySelector("empty"), f = sTag[i].querySelector("full"), h = sTag[i].querySelector("hover");
-        f.style.width = "0%", e.style.width = "100%", h.style.width = "0%", e.style.opacity = .1;
-        if (i < rating && rating > 0) {
-            f.style.width = "100%", e.style.width = "0%";
-            (i >= Math.floor(rating)) && (rating > 0) && (f.style.opacity = rating % 1);
-        } else { e.style.opacity = rating % 1 > 0 ? rating % 1 : .1; }
-        //                console.log({ i },e.style.opacity,e.style.width);
+    const s = e.getElementsByTagName("svg"), r = Math.floor(rating), f = rating - r;
+    //    console.log({s,r,f});
+    for (let i = 1; i <= s.length; i++) {
+        let m = s[i - 1];
+        i > r
+            ? i == r + 1 && f > 0
+                ? m.style.opacity = f
+                : (m.style.fill = "silver", m.style.opacity = .1)
+            : (m.style.fill = "gold", m.style.opacity = 1);
     }
 }
 
@@ -79,13 +108,13 @@ function sSchema(e, r, c) {
         type = e.dataset.schema,
         j = t[0] || document.createElement("script");
     t.length == 0 && (b.append(j), j.type = 'application/ld+json');
-    j.text = '{"@context": "https://schema.org/","@type": "'+type+'","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
+    j.text = '{"@context": "https://schema.org/","@type": "' + type + '","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + c + '"}}';
     //            console.log({ b, r, j }, j.textContent);
 }
 
 //onclick tooltip renderer
 function tTip(t, e, r, f) {
-    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f +"rem"; document.body.appendChild(T);
+    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f + "rem"; document.body.appendChild(T);
     let b = e.getBoundingClientRect();
     //            console.log({eCoordinates});
     setTimeout(function () {
@@ -99,43 +128,42 @@ function tTip(t, e, r, f) {
 
 function mStars(m, db, app) {
     //        console.log({ m, i});
-    const H = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__"),
-        pType = m.dataset.pagetype,
-        sSize = m.dataset.size || "lg",
-        isM = !(m.dataset.display == "true"),
-        isV=(m.dataset.votes=="true"),
-        sSet = mSettings[pType],
-        dSet = mSettings.default;
-    let sPath = pathFormat(m.getAttribute("data-url"), H),
-        R = localStorage["mSR_" + sPath];
-    for (let i in dSet) (typeof (sSet[i]) == "undefined") && (sSet[i] = dSet[i]); //Assign settings by type of current page (for Blogger)
+    const h = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__"),
+        t = m.dataset.pagetype,
+        s = m.dataset.size || "lg",
+        isD = (m.dataset.display == "true"),//Display only
+        isV = (m.dataset.votes == "true"),
+        S = mSettings[t],
+        D = mSettings.default;
+    let p = pathFormat(m.getAttribute("data-url"), h);
+    for (let i in D) (typeof (S[i]) == "undefined") && (S[i] = D[i]); //Assign settings by type of current page (for Blogger)
     // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
-    sSet["sSize"] = dSet["sSize"] * (sSize == "sm" ? .4 : sSize == "md" ? .6 : 1);
-    sSet["tSize"] = dSet["tSize"] * (sSize == "sm" ? .7 : sSize == "md" ? .75 : 1);
-    sSet["tBottom"]=dSet["tBottom-"+sSize];
-//    console.log(sSet["tBottomD-lg"]);
+    S["sSize"] = D["sSize"] * (s == "sm" ? .4 : s == "md" ? .6 : 1);
+    S["tSize"] = D["tSize"] * (s == "sm" ? .7 : s == "md" ? .75 : 1);
+    S["tBottom"] = D["tBottom-" + s];
+    //    console.log(sSet["tBottomD-lg"]);
     //console.log(sSize,m.dataset);
-    m.style.textAlign = sSet["sAlign"], m.style.position = "relative";
-    sPath = sPath.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
+    m.style.textAlign = S["sAlign"], m.style.position = "relative";
+    p = p.replace(/\s/g, "_").replace(/\#/g, "-").replace(/\./g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
+
+    let R = localStorage["mSR_" + p]
     //console.log(sSet["sSize"],isM);
 
     //Add Loading Spinner
     let spinny = document.createElement("div"); spinny.classList.add("mSpinny"), spinny.style = "border:3px solid #f3f3f3;border-top:5px solid #002233;border-radius:0.5;width:30px;height:30px;animation:mAnimate 1s linear infinite;border-radius:15px;";
-    if (sSet["sAlign"] === "center") spinny.style.margin = "auto"; else sSet["sAlign"] === "right" && (spinny.style.marginLeft = "calc(100% - " + sSet["sSize"] * sSet["sNo"] + "rem)");
+    if (S["sAlign"] === "center") spinny.style.margin = "auto"; else S["sAlign"] === "right" && (spinny.style.marginLeft = "calc(100% - " + S["sSize"] * S["sNo"] + "rem)");
     m.appendChild(spinny);
 
-        //Text above and below the stars
-        var tTop = document.createElement("div"), tBottom = document.createElement("div");
-        sSet["tBottom"] = sSet["tBottom"].replace(/\$average\$/g, "<span class='mStars-average'>0</span>").replace(/\$votes\$/g, '<span class="mStars-votes">0</span>').replace(/\$max\$/g, sSet["sNo"]),
-            tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R);
-        tBottom.innerHTML = sSet["tBottom"],
-            tTop.style.fontSize = tBottom.style.fontSize = sSet["tSize"] + "rem",
-  //      isV && (tBottom.style.display="inline-block"),
-            tTop.style.lineHeight = tBottom.style.lineHeight = isV?1:2,
-            tTop.style.textAlign = tBottom.style.textAlign = isV?'':sSet["sAlign"],
-            tTop.style.color = tBottom.style.color = sSet["tColor"],
-        isM && m.appendChild(tTop);
-    (isM || isV)&&m.appendChild(tBottom);
+    //Text above and below the stars
+    var tTop = document.createElement("div"), tBottom = document.createElement("div");
+    S["tBottom"] = S["tBottom"].replace(/\$average\$/g, "<span class='mStars-average'>0</span>").replace(/\$votes\$/g, '<span class="mStars-votes">0</span>').replace(/\$max\$/g, S["sNo"]),
+        tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
+    tBottom.innerHTML = S["tBottom"],
+        tTop.style.fontSize = tBottom.style.fontSize = S["tSize"] + "rem",
+        tTop.style.color = tBottom.style.color = S["tColor"],
+        !isD && m.appendChild(tTop);
+    (!isD || isV) && m.appendChild(tBottom);
+
     //db
     switch (db) {
         case null: case "": db = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
@@ -143,65 +171,47 @@ function mStars(m, db, app) {
             if ((db.indexOf("https://") !== 0) || (db.lastIndexOf("firebaseio.com") < 5)) db = "Error! Invalid Firebase URL.";
             else { db.lastIndexOf("/") !== db.length - 1 && (db = db + "/"); }
     }
-    let sWrap = document.createElement("div"); sWrap.style.width = (sSet["sSize"] + 0.1 * 2) * sSet["sNo"] + "rem", sWrap.style = "display:inline-block;", m.insertBefore(sWrap, m.lastChild);
-    isM && (sWrap.style.margin = "1rem");
-    isV && (sWrap.style.lineHeight=0);
-    //Star Render
-    for (let i = 1; i <= sSet["sNo"]; i++) {
-        let s = document.createElement("mStar"); s.style = "display:inline-block;margin:0.1rem", s.style.width = sSet["sSize"] + "rem", s.style.cursor = !R && isM ? "pointer" : "default";
-        isM && (s.onmouseenter = function () {
-            if (!R) {
-                let s = m.getElementsByTagName("mStar");
-                for (let j = 0; j < s.length; j++) {
-                    let f = s[j].querySelector("full"), e = s[j].querySelector("empty"), h = s[j].querySelector("hover");
-                    j < i ? (f.style.width = e.style.width = "0%", h.style.width = "100%") : (f.style.width = h.style.width = "0%", e.style.width = "100%", e.style.opacity = .5);
-                }
-                (sSet["tTop"] != "") && (tTop.innerHTML = i + "/" + sSet["sNo"]);
-            } else m.title = sSet["tDone"].replace(/\$userRating\$/g, R), m.style.cursor = "default";
-        });
-        let F = document.createElement("full");
-        let E = document.createElement("empty");
-        let H = document.createElement("hover");
-        F.style = E.style = H.style = "display:inline-block;overflow:hidden";
-        E.innerHTML = F.innerHTML = H.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="' + sSet["sSize"] + 'rem" height="' + sSet["sSize"] + 'rem" fill="gold" class="bi bi-star-fill" viewBox="0 0 16 16">%0A  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>%0A</svg>';
-        E.firstChild.style.fill = 'rgb(248,249,250)';
-        s.style.lineHeight = "0", s.append(F, E, H), sWrap.appendChild(s);
-    }
-    //            sRender(m, 0);
+
+    let w = sRender(m, S, isD, isV, R, tTop);
+
     if (db.indexOf("Error!") < 0) {
-        let dbInit = app.database().ref("mStars/" + H + "/" + sPath);
+        let dbInit = app.database().ref("mStars/" + h + "/" + p);
         //console.log({ dbInit },app.name,sPath);
         dbInit.on("value", dbVal => {
             let rArr = dbVal.val() || { "r": 0, "c": 0 },
-                rating = (rArr.r * sSet["sNo"]).toFixed(2);
+                rating = (rArr.r * S["sNo"]).toFixed(2);
             //                    console.log({ rArr });
 
             //Render stars and remove Spinny
-            sRender(m, rating);
-            (typeof m.dataset.schema!="undefined") && sSchema(m, rating, rArr.c);
+            sUpdate(m, rating);
+            (typeof m.dataset.schema != "undefined") && sSchema(m, rating, rArr.c);
             m.contains(spinny) && spinny.remove();
-            (isM || isV) && (
+            (!isD || isV) && (
                 m.getElementsByClassName("mStars-average")[0].textContent = Math.round(rating * 100) / 100,
                 m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
-//                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
+            //                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
 
-            if (isM) {
-                sWrap.onmouseleave = function () { sRender(m, rating), tTop.innerHTML = !R ? sSet["tTop"] : sSet["tDone"].replace(/\$userRating\$/g, R); };
-                    m.querySelectorAll("mStar").forEach((e, i) => {
-                        e.onclick = function () {
-                            if (!R) {
-                                // console.log({ R }, !R);
-                                //rating update
-                                var newRating = (rArr.r * rArr.c + (i + 1) / sSet["sNo"]) / (rArr.c + 1);
-                                dbInit.set({ "r": newRating.toFixed(6), "c": rArr.c + 1 }),
-                                    R = localStorage["mSR_" + sPath] = i + 1,
-                                    m.querySelectorAll("mStar").forEach(e => e.style.cursor = "default"),
-                                    tTip(sSet["tThanks"], m, i + 1, sSet["tSize"]),
-                                    tTop.innerHTML = sSet["tTop"];
-                            } else tTip(sSet["tDone"], m, R, sSet["tSize"]);
-                            //console.log(R);
-                        };
-                    });
+            if (!isD) {
+                w.onmouseleave = function () {
+                    sUpdate(m, rating),
+                        tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
+                };
+                m.querySelectorAll("svg").forEach((e, i) => {
+                    e.onclick = function () {
+                        if (!R) {
+                            // console.log({ R }, !R);
+                            //rating update
+                            var newRating = (rArr.r * rArr.c + (i + 1) / S["sNo"]) / (rArr.c + 1);
+                            console.log({ "r": newRating.toFixed(6), "c": rArr.c + 1 });
+                            dbInit.set({ "r": newRating.toFixed(6), "c": rArr.c + 1 }),
+                                R = localStorage["mSR_" + p] = i + 1,
+                                m.querySelectorAll("svg").forEach(e => e.style.cursor = "default"),
+                                tTip(S["tThanks"], m, i + 1, S["tSize"]),
+                                tTop.innerHTML = S["tTop"];
+                        } else tTip(S["tDone"], m, R, S["tSize"]);
+                        //console.log(R);
+                    };
+                });
             }
         });
     } else m.innerHTML = db;
