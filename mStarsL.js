@@ -8,6 +8,11 @@
  */
 
 //Covert path into identifier
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
+
+//console.log({ initializeApp, getDatabase });
+
 function pathFormat(p, host) {
     let e = p.split("?")[0].split("#")[0].replace("https:", "").replace("http:", "").replace("file:", "").replace("ftp:", "").replace("mailto:", "");
     for (; "/" == e[0];)e = e.substring(1);
@@ -16,6 +21,7 @@ function pathFormat(p, host) {
     e = e.replace(/\./g, "_").replace(/\//g, "__").replace(/\,/g, "___").replace(/\s/g, "").replace(/\#/g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
     return e = e.replace(host, "");
 }
+
 
 //mStars Render
 function sRender(e, S, isD, isV, R, p, tTop) {
@@ -128,13 +134,11 @@ function mStars(m, p, db) {
 
     //    console.log(S["tSize"]);
 
-    //db
-
     let w = sRender(m, S, isD, isV, R, p, tTop);
 
     //        console.log({ db });
-    db.once("value", rec => {
-        let rArr = rec.val() || { "r": 0, "c": 0 },
+    onValue(db, s => {
+        const rArr = s.val() || { "r": 0, "c": 0 },
             rating = (rArr.r * S["sNo"]).toFixed(2);
         //                    console.log({ rArr });
 
@@ -156,83 +160,69 @@ function mStars(m, p, db) {
                             const c = rArr.c + 1,
                                 r = Math.round((rArr.r * rArr.c + (i + 1) / S["sNo"]) / c * 1000000) / 1000000;
                             //                            console.log({ "r": r, "c": c,i });
-                            db.set({ "r": r, "c": c });
-                            R = localStorage["mSR_" + p] = i + 1;
-                            m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
-
-                            i >= 3 && tTip(S["tThanks"], m, i + 1, D["tSize"]);
-                            tTop.innerHTML = S["tTop"] + (i > 3 ? " Thanks!" : '');
-                            location.reload();
+                            set(db, { "r": r, "c": c }).then(() => {
+                                R = localStorage["mSR_" + p] = i + 1;
+                                m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
+                                i >= 3 && tTip(S["tThanks"], m, i + 1, D["tSize"]);
+                                tTop.innerHTML = S["tTop"] + (i > 3 ? " Thanks!" : '');
+                                location.reload();
+                            });
                         } else tTip(S["tDone"], m, R, D["tSize"]);
                         //console.log(R);
                     };
                 });
         }
-    });
+    }, { onlyOnce: true });
 }
 
-    //mStars - Schema for Google Search Rich Reviews Snippet
-    function sSchema(m, db) {
-//        console.log({ m, db });
-        typeof m.dataset.schema != "undefined" &&{}
-        db.once("value", rec => {
-            //            console.log({ db, dbVal },dbVal.val());
-            let rArr = rec.val() || { "r": 0, "c": 0 },
-                r = (rArr.r * 5).toFixed(2);
+//mStars - Schema for Google Search Rich Reviews Snippet
+function sSchema(m, h, a) {
+    //        console.log({ m, db });
+    const p = pathFormat(m.dataset.url, h),
+        db = ref(getDatabase(a), "mStars/" + h + "/" + p);
 
-            let b = m.closest(".post") || m.closest(".Blog"),
-                t = b.getElementsByClassName("ratingJSON"),
-                n = m.dataset.title == "" ? document.title : m.dataset.title,
-                type = m.dataset.schema,
-                j = t[0] || document.createElement("script");
-            t.length == 0 && (b.append(j), j.type = 'application/ld+json');
-            j.text = '{"@context": "https://schema.org/","@type": "' + type + '","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
-            //            console.log({ b, r, j }, j.textContent);
-        });
-    }
-
-    //create scripts - if not already existing
-function loadScripts() {
-    const a = document.createElement("script"); a.src = "https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js", async=!0, a.id = ("fbdb"), document.head.appendChild(a), a.onload = function () {
-        const d = document.createElement("script"); d.src = "https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js", document.head.appendChild(d);
-    }
+    onValue(db, s => {
+        const rArr = s.val() || { "r": 0, "c": 0 },
+            r = (rArr.r * 5).toFixed(2);
+        let b = m.closest(".post") || m.closest(".Blog"),
+            t = b.getElementsByClassName("ratingJSON"),
+            n = m.dataset.title == "" ? document.title : m.dataset.title,
+            type = m.dataset.schema,
+            j = t[0] || document.createElement("script");
+        t.length == 0 && (b.append(j), j.type = 'application/ld+json');
+        j.text = '{"@context": "https://schema.org/","@type": "' + type + '","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
+        //            console.log({ b, r, j }, j.textContent);
+    }, { onlyOnce: true });
 }
 
 //Check if DB is ready
 function i(m) {
-    function init() {
-        if (typeof firebase == "object" && typeof firebase.database == "function" && typeof firebase.initializeApp == "function") {
-            //        console.log({ a, f: firebase.apps.length });
-            let d = document.getElementById("mStars").dataset.db || null,//db Path
-                a = !firebase.apps.length ? firebase.initializeApp({ "databaseURL": d }, "mStars") : firebase.app("mStars");
+    const h = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__"),
+        d = document.getElementById("mStars").dataset.db || null,//db Path
+        a = !getApps.length ? initializeApp({ "databaseURL": d }, "mStars") : getApp("mStars"),
+        p = pathFormat(m.dataset.url, h),
+        db = ref(getDatabase(a), "mStars/" + h + "/" + p);
+    //  console.log({ h, p, db });
 
-            const h = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__");
-            let p = pathFormat(m.dataset.url, h),
-                db = a.database().ref("mStars/" + h + "/" + p);
-
-            switch (d) {
-                case null: case "":
-                    m.innerHTML = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
-                default:
-                    if (d.indexOf("https://") !== 0 || d.lastIndexOf("firebaseio.com") < 5)
-                        m.innerHTML = "Error! Invalid Firebase URL.";
-                    else {
-                        d.lastIndexOf("/") !== d.length - 1 && (d = d + "/");
-//                        console.log({ f });
-                        f && (f = !1, Array.from(document.getElementsByClassName("mStars")).forEach(m => sSchema(m, db)));
-                        mStars(m, p, db);
-                    }
+    switch (d) {
+        case null: case "":
+            m.innerHTML = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
+        default:
+            if (d.indexOf("https://") !== 0 || d.lastIndexOf("firebaseio.com") < 5)
+                m.innerHTML = "Error! Invalid Firebase URL.";
+            else {
+                d.lastIndexOf("/") !== d.length - 1 && (d = d + "/");
+                //                        console.log({ f });
+                f && (f = !1, Array.from(document.getElementsByClassName("mStars")).forEach(m => typeof m.dataset.schema != "undefined" && sSchema(m, h, a)));
+                mStars(m, p, db);
             }
-        } else { setTimeout(function () { init(); }, 50); }
-    } init();
+    }
 }
 
 function mStarsCB(entries, observer) {
     entries.forEach((entry) => {
         if (entry.isIntersecting) {
             observer.unobserve(entry.target);
-            !document.getElementById("fbdb") && loadScripts();
-//            console.log({ f });
             i(entry.target);
         }
     });
