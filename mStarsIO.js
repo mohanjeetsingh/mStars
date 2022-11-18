@@ -1,0 +1,244 @@
+/*!
+ * mStars
+ * Demo @ https://mBlocksForBloggers.blogspot.com/
+ * Documentation @ tbd
+ * Agency @ https://CIA.RealHappinessCenter.com
+ * Copyright (c) 2022, Mohanjeet Singh (https://Mohanjeet.blogspot.com/)
+ * Released under the MIT license
+ */
+
+//Covert path into identifier
+function pathFormat(p, host) {
+    let e = p.split("?")[0].split("#")[0].replace("https:", "").replace("http:", "").replace("file:", "").replace("ftp:", "").replace("mailto:", "");
+    for (; "/" == e[0];)e = e.substring(1);
+    for (0 === e.indexOf("www.") && (e = e.replace("www.", "")); "/" == e[e.length - 1];)e = e.substring(0, e.length - 1);
+    //      console.log({e});
+    e = e.replace(/\./g, "_").replace(/\//g, "__").replace(/\,/g, "___").replace(/\s/g, "").replace(/\#/g, "-").replace(/\@/g, "-").replace(/\!/g, "-").replace(/\$/g, "-").replace(/\%/g, "-").replace(/\&/g, "-").replace(/\(/g, "-").replace(/\)/g, "-");
+    return e = e.replace(host, "");
+}
+
+//mStars Render
+function sRender(e, S, isD, isV, R, p, tTop) {
+    const w = document.createElement("div"), n = S["sNo"]; w.style.width = (S["sSize"] + 0.1 * 2) * n + "rem", w.style = "display:inline-block;", e.insertBefore(w, e.lastChild);
+    !isD && (w.style.margin = "1rem");
+    isV && (w.style.lineHeight = 0);
+
+    for (let i = 1; i <= n; i++) {
+        w.insertAdjacentHTML("beforeend", '<svg xmlns="http://www.w3.org/2000/svg" width="' + S["sSize"] + 'rem" height="' + S["sSize"] + 'rem" fill="gold" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" /></svg >');
+        const s = w.lastChild;
+        s.style = "display:inline-block;margin:0.1rem",
+            s.style.cursor = !R && !isD ? "pointer" : "inherit";
+
+        !isD && (s.onmouseenter = function () {
+            if (!localStorage["mSR_" + p]) {
+                let s = e.getElementsByTagName("svg");
+                for (let j = 0; j < s.length; j++) {
+                    s[j].style.fill = "gold", s[j].style.opacity = j < i ? 1 : .25;
+                }
+                (S["tTop"] != "") && (tTop.innerHTML = i + "/" + n);
+            }
+        });
+    }
+    return w;
+}
+
+//Star Renderer
+function sUpdate(e, rating) {
+    //        console.log({ e, rating });
+    const s = e.getElementsByTagName("svg"), r = Math.floor(rating), f = rating - r;
+    //    console.log({s,r,f});
+    for (let i = 1; i <= s.length; i++) {
+        let m = s[i - 1];
+        i > r
+            ? i == r + 1 && f > 0
+                ? m.style.opacity = f
+                : (m.style.fill = "silver", m.style.opacity = .1)
+            : (m.style.fill = "gold", m.style.opacity = 1);
+    }
+}
+
+//onclick tooltip renderer
+function tTip(t, e, r, f) {
+    const T = document.createElement("div"); T.innerHTML = t.replace(/\$userRating\$/g, r), T.style = "border-radius:7px;position:absolute;background:rgba(255,215,0,100%);padding:5px;text-align:center;opacity:0;transition:opacity 1s;width:200px;boxSizing:border-box;zIndex:9999999", T.style.fontSize = f; document.body.appendChild(T);
+    //    console.log({t:T.style.fontSize,f});
+    let b = e.getBoundingClientRect();
+    //            console.log({eCoordinates});
+    setTimeout(function () {
+        T.style.opacity = "1";
+        T.style.left = e.style.textAlign === "right" ? (window.scrollX + b.left + e.offsetWidth - 200 + "px") : e.style.textAlign === "center" ? (window.scrollX + b.left + e.offsetWidth / 2 - 100 + "px") : window.scrollX + b.left + "px";
+        T.style.top = window.scrollY + b.top + 44 + "px";
+        //        console.log(T.style.top, b.top, T.offsetHeight, window.scrollY);
+    }, 10),
+        setTimeout(function () { T.style.opacity = 0, setTimeout(function () { document.body.removeChild(T); }, 1e3); }, 3500);
+}
+
+function mStars(m, p, db) {
+    //        console.log({ m, i});
+    //Settings and variable/const defintions
+    const mSettings = {
+        "default": {
+            "sNo": 5,//Number > 0
+            "sSize": 2.5,//in rem, Number > 0
+            "tSize": 1,//in rem, Number > 0
+            "tColor": '',
+            "sAlign": "center",
+            "tTop": "Liked it? Rate it:",
+            "tBottom-lg": "$average$ average • $votes$ ratings", //$max$
+            "tBottom-md": "$average$ • $votes$ ratings", //$max$
+            "tBottom-sm": "$average$ • $votes$ ratings", //$max$
+            "tThanks": "Thanks for rating!",
+            "tDone": "You rated this $userRating$ star!",
+        },
+        "archive": {},
+        "error_page": {},
+        "index": {},
+        "item": {},
+        "static_page": {}
+    }
+
+    //console.log({ m });
+    const t = m.dataset.pagetype,
+        s = m.dataset.size || "lg",
+        isD = (m.dataset.display == "true"),//Display only
+        isV = (m.dataset.votes == "true"),
+        S = mSettings[t],
+        D = mSettings.default;
+
+    for (let i in D) (typeof (S[i]) == "undefined") && (S[i] = D[i]); //Assign settings by type of current page (for Blogger)
+    // console.log({sSet,dSet,m,pType,sType: isM}, m.dataset.display, location.href, location.host);
+    S["sSize"] = D["sSize"] * (s == "sm" ? .4 : s == "md" ? .6 : 1);
+    S["tSize"] = D["tSize"] * (s == "sm" ? .7 : s == "md" ? .75 : 1) + "rem";
+    S["tBottom"] = D["tBottom-" + s];
+    //    console.log(sSet["tBottomD-lg"]);
+    //console.log(sSize,m.dataset);
+    m.style.textAlign = S["sAlign"], m.style.position = "relative";
+
+    let R = localStorage["mSR_" + p];
+    //console.log(sSet["sSize"],isM);
+
+    //Text above and below the stars
+    var tTop = document.createElement("div"), tBottom = document.createElement("div");
+    S["tBottom"] = S["tBottom"].replace(/\$average\$/g, "<span class='mStars-average'>0</span>").replace(/\$votes\$/g, '<span class="mStars-votes">0</span>').replace(/\$max\$/g, S["sNo"]),
+        tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
+    tBottom.innerHTML = S["tBottom"],
+        tTop.style.fontSize = tBottom.style.fontSize = S["tSize"],
+        tTop.style.color = tBottom.style.color = S["tColor"],
+        !isD && m.appendChild(tTop);
+    (!isD || isV) && m.appendChild(tBottom);
+
+    //    console.log(S["tSize"]);
+
+    //db
+
+    let w = sRender(m, S, isD, isV, R, p, tTop);
+
+    //        console.log({ db });
+    db.once("value", rec => {
+        let rArr = rec.val() || { "r": 0, "c": 0 },
+            rating = (rArr.r * S["sNo"]).toFixed(2);
+        //                    console.log({ rArr });
+
+        //Render stars
+        sUpdate(m, rating);
+        (!isD || isV) && (
+            m.getElementsByClassName("mStars-average")[0].textContent = rating,
+            m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
+        //                console.log(m.getElementsByClassName("mStars-average"), m.getElementsByClassName("mStars-votes"));
+        if (!isD) {
+            w.onmouseleave = function () {
+                sUpdate(m, rating),
+                    tTop.innerHTML = !R ? S["tTop"] : S["tDone"].replace(/\$userRating\$/g, R);
+            },
+                Array.from(m.getElementsByTagName("svg")).forEach((e, i) => {
+                    e.onclick = function () {
+                        if (!R) {
+                            //rating update
+                            const c = rArr.c + 1,
+                                r = Math.round((rArr.r * rArr.c + (i + 1) / S["sNo"]) / c * 1000000) / 1000000;
+                            //                            console.log({ "r": r, "c": c,i });
+                            db.set({ "r": r, "c": c });
+                            R = localStorage["mSR_" + p] = i + 1;
+                            m.querySelectorAll("svg").forEach(e => e.style.cursor = "inherit");
+
+                            i >= 3 && tTip(S["tThanks"], m, i + 1, D["tSize"]);
+                            tTop.innerHTML = S["tTop"] + (i > 3 ? " Thanks!" : '');
+                            location.reload();
+                        } else tTip(S["tDone"], m, R, D["tSize"]);
+                        //console.log(R);
+                    };
+                });
+        }
+    });
+}
+
+    //mStars - Schema for Google Search Rich Reviews Snippet
+    function sSchema(m, db) {
+//        console.log({ m, db });
+        typeof m.dataset.schema != "undefined" &&{}
+        db.once("value", rec => {
+            //            console.log({ db, dbVal },dbVal.val());
+            let rArr = rec.val() || { "r": 0, "c": 0 },
+                r = (rArr.r * 5).toFixed(2);
+
+            let b = m.closest(".post") || m.closest(".Blog"),
+                t = b.getElementsByClassName("ratingJSON"),
+                n = m.dataset.title == "" ? document.title : m.dataset.title,
+                type = m.dataset.schema,
+                j = t[0] || document.createElement("script");
+            t.length == 0 && (b.append(j), j.type = 'application/ld+json');
+            j.text = '{"@context": "https://schema.org/","@type": "' + type + '","name": "' + n + '","aggregateRating": {"@type": "AggregateRating","ratingValue": "' + r + '","worstRating": "1","bestRating": "5","ratingCount": "' + rArr.c + '"}}';
+            //            console.log({ b, r, j }, j.textContent);
+        });
+    }
+
+    //create scripts - if not already existing
+function loadScripts() {
+    const a = document.createElement("script"); a.src = "https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js", async=!0, a.id = ("fbdb"), document.head.appendChild(a), a.onload = function () {
+        const d = document.createElement("script"); d.src = "https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js", document.head.appendChild(d);
+    }
+}
+
+//Check if DB is ready
+function i(m) {
+    function init() {
+        if (typeof firebase == "object" && typeof firebase.database == "function" && typeof firebase.initializeApp == "function") {
+            //        console.log({ a, f: firebase.apps.length });
+            let d = document.getElementById("mStars").dataset.db || null,//db Path
+                a = !firebase.apps.length ? firebase.initializeApp({ "databaseURL": d }, "mStars") : firebase.app("mStars");
+
+            const h = location.host.replace("www.", "").replace(/\./g, "_").replace(/\//g, "__");
+            let p = pathFormat(m.dataset.url, h),
+                db = a.database().ref("mStars/" + h + "/" + p);
+
+            switch (d) {
+                case null: case "":
+                    m.innerHTML = "Error! Missing Firebase DB URL >> 'https://YOUR-FIREBASE.firebaseio.com'."; break;
+                default:
+                    if (d.indexOf("https://") !== 0 || d.lastIndexOf("firebaseio.com") < 5)
+                        m.innerHTML = "Error! Invalid Firebase URL.";
+                    else {
+                        d.lastIndexOf("/") !== d.length - 1 && (d = d + "/");
+//                        console.log({ f });
+                        f && (f = !1, Array.from(document.getElementsByClassName("mStars")).forEach(m => sSchema(m, db)));
+                        mStars(m, p, db);
+                    }
+            }
+        } else { setTimeout(function () { init(); }, 50); }
+    } init();
+}
+
+function mStarsCB(entries, observer) {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            observer.unobserve(entry.target);
+            !document.getElementById("fbdb") && loadScripts();
+//            console.log({ f });
+            i(entry.target);
+        }
+    });
+}
+
+const options = { rootMargin: '500px', threshold: 0.0 };
+let f = !0,
+    observer = new IntersectionObserver(mStarsCB, options);
+Array.from(document.getElementsByClassName("mStars")).forEach(e => observer.observe(e));
