@@ -3,7 +3,7 @@
  * Demo @ https://mBlocksForBloggers.blogspot.com/
  * Documentation @ tbd
  * Agency @ https://CIA.RealHappinessCenter.com
- * Copyright (c) 2022, Mohanjeet Singh (https://Mohanjeet.blogspot.com/)
+ * Copyright (c) 2025, Mohanjeet Singh (https://Mohanjeet.blogspot.com/)
  * Released under the MIT license
  */
 
@@ -138,7 +138,7 @@ function mStars(m, p, db) {
 
     //        console.log({ db });
     onValue(db, s => {
-        const rArr = s.val() || { "r": 0, "c": 0 },
+        const rArr = s.val() || { "r": 1, "c": 1 },//set to 1 to avoid search console error
             rating = (rArr.r * S["sNo"]).toFixed(2);
         //                    console.log({ rArr });
 
@@ -182,7 +182,7 @@ function sSchema(m, h, a) {
         db = ref(getDatabase(a), "mStars/" + h + "/" + p);
 
     onValue(db, s => {
-        const rArr = s.val() || { "r": 0, "c": 0 },
+        const rArr = s.val() || { "r": 1, "c": 1 },//set to 1 to avoid search console error
             r = (rArr.r * 5).toFixed(2);
         let b = m.closest(".post") || m.closest(".Blog"),
             t = b.getElementsByClassName("ratingJSON"),
