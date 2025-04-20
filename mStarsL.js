@@ -1,7 +1,7 @@
 /*!
  * mStars
  * Demo @ https://mBlocksForBloggers.blogspot.com/
- * Documentation @ tbd
+ * Documentation @ tbd *
  * Agency @ https://CIA.RealHappinessCenter.com
  * Copyright (c) 2025, Mohanjeet Singh (https://Mohanjeet.blogspot.com/)
  * Released under the MIT license
@@ -138,12 +138,12 @@ function mStars(m, p, db) {
 
     //        console.log({ db });
     onValue(db, s => {
-        const rArr = s.val() || { "r": 1, "c": 1 },//set to 1 to avoid search console error
+        const rArr = s.val() || { "r": 0, "c": 0 },
             rating = (rArr.r * S["sNo"]).toFixed(2);
         //                    console.log({ rArr });
 
-        //Render stars
-        sUpdate(m, rating);
+        sUpdate(m, rating);         //Render stars
+
         (!isD || isV) && (
             m.getElementsByClassName("mStars-average")[0].textContent = rating,
             m.getElementsByClassName("mStars-votes")[0].textContent = rArr.c);
